@@ -2,7 +2,8 @@ import { Pool } from "pg";
 import { IUserRepository } from "../interfaces/IUserRepository";
 import { UserDto } from "../../dtos/UserDto";
 import { DatabaseConfigDto } from "../../dtos/DatabaseConfigDto";
-import { OperationFailed } from "../../Constants";
+import { OPERATION_FAILED } from "../../Constants/Constants";
+import { NewUserDto } from "../../dtos/NewUserDto";
 
 export class UserRepository implements IUserRepository {
   private GET_USER_BY_EMAIL: string = `
@@ -15,6 +16,11 @@ export class UserRepository implements IUserRepository {
     SELECT last_name, first_name, user_name, email, bio, role, avatar_url, created_at, updated_at
     FROM users
     WHERE user_name = $1
+  `;
+
+  private SAVE_USER: string = `
+    INSERT INTO users (last_name, first_name, user_name, email, created_at)
+    VALUES ($1, $2, $3, $4, NOW())
   `;
 
   private pool: Pool;
@@ -40,7 +46,7 @@ export class UserRepository implements IUserRepository {
         updatedAt: row.updated_at,
       };
     } catch (error) {
-      throw new Error(OperationFailed);
+      throw new Error(OPERATION_FAILED);
     }
   }
 
@@ -63,7 +69,16 @@ export class UserRepository implements IUserRepository {
         updatedAt: row.updated_at,
       };
     } catch (error) {
-      throw new Error(OperationFailed);
+      throw new Error(OPERATION_FAILED);
+    }
+  }
+
+  async SaveUser(newUser: NewUserDto): Promise<void> {
+    try {
+      const values = [newUser.lastName, newUser.firstName, newUser.userName, newUser.email, newUser.password];
+      await this.pool.query(this.SAVE_USER, values);
+    } catch (error) {
+      throw new Error(OPERATION_FAILED);
     }
   }
 }

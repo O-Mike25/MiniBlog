@@ -1,0 +1,1 @@
+export const OPERATION_FAILED = "The operation could not be completed due to an unexpected error.";
