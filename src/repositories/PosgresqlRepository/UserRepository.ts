@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import { IUserRepository } from "../interfaces/IUserRepository";
 import { UserDto } from "../../dtos/UserDto";
 import { DatabaseConfigDto } from "../../dtos/DatabaseConfigDto";
-import { OPERATION_FAILED } from "../../Constants/Constants";
+import { OPERATION_FAILED } from "../../constants/Constants";
 import { NewUserDto } from "../../dtos/NewUserDto";
 
 export class UserRepository implements IUserRepository {
@@ -19,8 +19,8 @@ export class UserRepository implements IUserRepository {
   `;
 
   private SAVE_USER: string = `
-    INSERT INTO users (last_name, first_name, user_name, email, created_at)
-    VALUES ($1, $2, $3, $4, NOW())
+    INSERT INTO users (last_name, first_name, user_name, email, password, created_at)
+    VALUES ($1, $2, $3, $4, $5, NOW())
   `;
 
   private pool: Pool;
@@ -78,6 +78,7 @@ export class UserRepository implements IUserRepository {
       const values = [newUser.lastName, newUser.firstName, newUser.userName, newUser.email, newUser.password];
       await this.pool.query(this.SAVE_USER, values);
     } catch (error) {
+      console.log(error);
       throw new Error(OPERATION_FAILED);
     }
   }
