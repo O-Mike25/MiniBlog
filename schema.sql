@@ -40,3 +40,10 @@ CREATE TABLE IF NOT EXISTS ratings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_rating_per_user UNIQUE (article_id, author_id)
 );
+
+CREATE TABLE IF NOT EXISTS token_blacklist (
+    id SERIAL PRIMARY KEY,
+    token TEXT,
+    expire_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
