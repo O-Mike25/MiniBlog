@@ -5,6 +5,7 @@ import { TokenService } from "../../../src/services/TokenService";
 import { describe, test, expect, beforeEach, jest } from "@jest/globals";;
 import { NewUserDto } from "../../../src/dtos/NewUserDto";
 import { ITokenBlacklistRepository } from "../../../src/repositories/interfaces/ITokenBlacklistRepository";
+import { ICryptoService } from "../../../src/services/CryptoService/ICryptoService";
 
 describe("UserService", () => {
   const LAST_NAME = "Doe";
@@ -12,7 +13,9 @@ describe("UserService", () => {
   const USER_NAME = "john.doe";
   const EMAIL = "john.doe@example.com";
   const PASSWORD = "StrongPassword123!";
-  const SECRET_KEY = "fake-secret-key";
+  const FAKE_PASSWORD = "fake password";
+  const PASSWORD_HASH = "password hash";
+  const SECRET_KEY = "fake secret key";
   const USER_ROLE = "user";
   const TOKEN = "eyJhbGci.ioiOjMDB9._XvU4pQHnIg";
 
@@ -21,6 +24,7 @@ describe("UserService", () => {
   let emailService: jest.Mocked<IEmailService>;
   let tokenBlacklistRepository: jest.Mocked<ITokenBlacklistRepository>
   let tokenService: TokenService;
+  let cryptoService: jest.Mocked<ICryptoService>;
 
   beforeEach(() => {
     userRepository = {
@@ -45,7 +49,12 @@ describe("UserService", () => {
     jest.spyOn(tokenService, "SaveToken").mockResolvedValue();
     jest.spyOn(tokenService, "IsBlacklisted").mockResolvedValue(false);
 
-    userService = new UserService(userRepository, emailService, tokenService);
+    cryptoService = {
+      Hash: jest.fn(),
+      Compare: jest.fn()
+    }
+
+    userService = new UserService(userRepository, emailService, tokenService, cryptoService);
   });
 
   describe("RegisterNewUser", () => {
@@ -104,10 +113,24 @@ describe("UserService", () => {
       
       const promise = userService.RegisterNewUser(newUserDto);
 
-      await expect(promise).rejects.toThrow("A user with this username already exists.")
+      await expect(promise).rejects.toThrow("A user with this username already exists.");
     });
 
-    test("Given new user info When registering this user Then call persistence layer", async () => {
+    test("Given non existing user When registering this user Then encrypt password", async () => {
+      let newUserDto: NewUserDto = {
+            lastName: LAST_NAME,
+            firstName: FIRST_NAME,
+            userName: USER_NAME,
+            email: EMAIL,
+            password: PASSWORD
+      };
+      
+      await userService.RegisterNewUser(newUserDto);
+
+      expect(cryptoService.Hash).toHaveBeenCalledWith(PASSWORD);
+    });
+
+    test("Given non existing user When registering this user Then call persistence layer", async () => {
       let newUserDto: NewUserDto = {
             lastName: LAST_NAME,
             firstName: FIRST_NAME,
@@ -121,7 +144,7 @@ describe("UserService", () => {
       expect(userRepository.SaveUser).toHaveBeenCalledWith(newUserDto);
     });
 
-    test("Given new user info When registering this user Then generate JWT token", async () => {
+    test("Given non existing user When registering this user Then generate JWT token", async () => {
       let newUserDto: NewUserDto = {
             lastName: LAST_NAME,
             firstName: FIRST_NAME,
@@ -135,7 +158,7 @@ describe("UserService", () => {
       expect(tokenService.GenerateToken).toHaveBeenCalledWith({email: EMAIL, role: USER_ROLE});
     });
 
-    test("Given new user info When registering this user Then send confirmation email", async () => {
+    test("Given non existing user When registering this user Then send confirmation email", async () => {
       let newUserDto: NewUserDto = {
             lastName: LAST_NAME,
             firstName: FIRST_NAME,
@@ -149,7 +172,7 @@ describe("UserService", () => {
       expect(emailService.SendUserRegistrationMail).toHaveBeenCalledWith(EMAIL, FIRST_NAME, LAST_NAME);
     });
 
-    test("Given new user info When registering this user Then return token", async () => {
+    test("Given non existing user When registering this user Then return token", async () => {
       jest.spyOn(tokenService, "GenerateToken").mockReturnValue(TOKEN);
       let newUserDto: NewUserDto = {
             lastName: LAST_NAME,
@@ -164,6 +187,55 @@ describe("UserService", () => {
       expect(token).toBe(TOKEN);
     });
   });
+
+  describe("Login", () => {
+    beforeEach(() => {
+      userRepository.FindUserByEmail.mockResolvedValue({password: PASSWORD_HASH});
+      cryptoService.Compare.mockResolvedValue(true);
+    })
+
+    test("Given user infos When logging in Then retrieve user", async () => {
+      await userService.Login(EMAIL, PASSWORD);
+
+      expect(userRepository.FindUserByEmail).toHaveBeenCalledWith(EMAIL);
+    });
+
+    test("Given user doesn't exist When logging in Then return invalid credentials exception", async () => {
+      userRepository.FindUserByEmail.mockResolvedValue(null);
+
+      const promise = userService.Login(EMAIL, PASSWORD);
+
+      await expect(promise).rejects.toThrow("The email or password is not correct");
+    });
+
+    test("Given user exists When logging in Then verify password", async () => {
+      await userService.Login(EMAIL, PASSWORD);
+
+      expect(cryptoService.Compare).toHaveBeenCalledWith(PASSWORD, PASSWORD_HASH);
+    });
+
+    test("Given invalid password When logging in Then return invalid credentials exception", async () => {
+      cryptoService.Compare.mockResolvedValue(false);
+
+      const promise =  userService.Login(EMAIL, PASSWORD);
+
+      await expect(promise).rejects.toThrow("The email or password is not correct");
+    });
+
+    test("Given correct password When logging in Then generate token", async () => {
+      await userService.Login(EMAIL, PASSWORD)
+
+      expect(tokenService.GenerateToken).toHaveBeenCalledWith({email: EMAIL, role: USER_ROLE});
+    });
+
+    test("Given correct password When logging in Then return token", async () => {
+      jest.spyOn(tokenService, "GenerateToken").mockReturnValue(TOKEN);
+
+      let token = await userService.Login(EMAIL, PASSWORD)
+
+      expect(token).toBe(TOKEN);
+    });
+  })
 
   describe("Logout", () => {
     test("Given a token When logging out Then verify that the token is blacklisted", async () => {

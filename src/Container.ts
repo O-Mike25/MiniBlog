@@ -9,8 +9,11 @@ import { TokenService } from "./services/TokenService";
 import { UserService } from "./services/UserService";
 import { UserController } from "./controllers/UserController";
 import { TokenBlacklistRepository } from "./repositories/PosgresqlRepository/TokenBlacklistRepository";
+import { ICryptoService } from "./services/CryptoService/ICryptoService";
+import { BcryptCryptoService } from "./services/CryptoService/BcryptService";
 
 dotenv.config();
+const SALT_ROUND = 5; 
 
 // === Configuration des environnements ===
 export const dbConfig: DatabaseConfigDto = {
@@ -39,7 +42,8 @@ export const tokenService = new TokenService(
   { expiresIn: parseInt(process.env.JWT_EXPIRES_IN!) },
   tokenBlacklistRepository
 );
-const userService = new UserService(userRepository, emailService, tokenService);
+const cryptoService: ICryptoService = new BcryptCryptoService(SALT_ROUND);
+const userService = new UserService(userRepository, emailService, tokenService, cryptoService);
 const userController = new UserController(userService);
 
 // === Export centralisé (type singleton) ===
@@ -50,6 +54,7 @@ export const Container = {
     userRepository,
     emailService,
     tokenService,
+    cryptoService,
     userService,
   },
   controllers: {

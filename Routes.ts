@@ -10,6 +10,7 @@ router.get("/", (req: Request, res: Response) => {
 });
 
 router.post("/users/signup", (req, res) => userController.SignUpUser(req, res));
-router.post("/users/signout", VerifyToken(false), (req, res) => userController.SignOutUser(req, res));
+router.post("/users/signin", (req, res) => userController.SignInUser(req, res));
+router.post("/users/signout", VerifyToken(), (req, res) => userController.SignOutUser(req, res));
 
 export default router;

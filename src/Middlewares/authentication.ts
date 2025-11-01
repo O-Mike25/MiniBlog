@@ -3,7 +3,7 @@ import { tokenService } from "../Container";
 import { Response, NextFunction } from "express";
 import { CustomRequest } from "../types";
 
-export function VerifyToken(checkBlacklist: boolean = true) {
+export function VerifyToken(checkBlacklist: boolean = false) {
     return async (req: CustomRequest, res: Response, next: NextFunction) => {
         try {
             const authHeader = req.headers["authorization"];
