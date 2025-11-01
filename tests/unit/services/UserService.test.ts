@@ -4,6 +4,7 @@ import { IEmailService } from "../../../src/services/EmailService/IEmailService"
 import { TokenService } from "../../../src/services/TokenService";
 import { describe, test, expect, beforeEach, jest } from "@jest/globals";;
 import { NewUserDto } from "../../../src/dtos/NewUserDto";
+import { ITokenBlacklistRepository } from "../../../src/repositories/interfaces/ITokenBlacklistRepository";
 
 describe("UserService", () => {
   const LAST_NAME = "Doe";
@@ -18,6 +19,7 @@ describe("UserService", () => {
   let userService: UserService;
   let userRepository: jest.Mocked<IUserRepository>;
   let emailService: jest.Mocked<IEmailService>;
+  let tokenBlacklistRepository: jest.Mocked<ITokenBlacklistRepository>
   let tokenService: TokenService;
 
   beforeEach(() => {
@@ -31,9 +33,17 @@ describe("UserService", () => {
       SendUserRegistrationMail: jest.fn(),
     };
 
-    tokenService = new TokenService(SECRET_KEY, {});
+    tokenBlacklistRepository = {
+      SaveToken: jest.fn(),
+      IsBlacklisted: jest.fn(),
+      RemoveExpired: jest.fn()
+    }
+
+    tokenService = new TokenService(SECRET_KEY, {}, tokenBlacklistRepository);
     jest.spyOn(tokenService, "GenerateToken").mockReturnValue("");
     jest.spyOn(tokenService, "VerifyToken").mockReturnValue("");
+    jest.spyOn(tokenService, "SaveToken").mockResolvedValue();
+    jest.spyOn(tokenService, "IsBlacklisted").mockResolvedValue(false);
 
     userService = new UserService(userRepository, emailService, tokenService);
   });
@@ -155,4 +165,28 @@ describe("UserService", () => {
     });
   });
 
+  describe("Logout", () => {
+    test("Given a token When logging out Then verify that the token is blacklisted", async () => {
+      await userService.Logout(TOKEN);
+
+      expect(tokenService.IsBlacklisted).toHaveBeenCalledWith(TOKEN);
+    });
+
+    test("Given the token is not blacklisted When logging out Then persist it in the blacklist", async () => {
+      jest.spyOn(tokenService, "IsBlacklisted").mockResolvedValue(false);
+
+      await userService.Logout(TOKEN);
+
+      expect(tokenService.SaveToken).toHaveBeenCalledWith(TOKEN);
+    });
+
+    test("Given the token is already blacklisted When logging out Then the operation is successful", async () => {
+      jest.spyOn(tokenService, "IsBlacklisted").mockResolvedValue(true);
+
+      await userService.Logout(TOKEN);
+
+      expect(tokenService.SaveToken).toHaveBeenCalledTimes(0);
+    });
+  });
+  
 });

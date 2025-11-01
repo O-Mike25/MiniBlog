@@ -22,6 +22,12 @@ export class UserService {
         return token;
     }
 
+    async Logout(token: string): Promise<void> {
+        let isBlacklisted = await this.tokenService.IsBlacklisted(token);
+        if(isBlacklisted) return;
+        this.tokenService.SaveToken(token);
+    }
+
     private async verifyUserUniqueness(email: string, userName: string): Promise<void> {
         const userByEmail = await this.userRepository.FindUserByEmail(email);
         if (userByEmail) {

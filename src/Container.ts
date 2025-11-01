@@ -8,11 +8,12 @@ import { NodemailerService } from "./services/EmailService/NodemailerService";
 import { TokenService } from "./services/TokenService";
 import { UserService } from "./services/UserService";
 import { UserController } from "./controllers/UserController";
+import { TokenBlacklistRepository } from "./repositories/PosgresqlRepository/TokenBlacklistRepository";
 
 dotenv.config();
 
 // === Configuration des environnements ===
-const dbConfig: DatabaseConfigDto = {
+export const dbConfig: DatabaseConfigDto = {
   user: process.env.DB_USER!,
   host: process.env.DB_HOST!,
   database: process.env.DB_NAME!,
@@ -32,9 +33,12 @@ const mailConfig: MailConfigDto = {
 // === Instanciation des services et dépendances ===
 const userRepository: IUserRepository = new UserRepository(dbConfig);
 const emailService: IEmailService = new NodemailerService(mailConfig);
-const tokenService = new TokenService(process.env.JWT_SECRET!, {
-  expiresIn: parseInt(process.env.JWT_EXPIRES_IN!),
-});
+const tokenBlacklistRepository: TokenBlacklistRepository = new TokenBlacklistRepository(dbConfig);
+export const tokenService = new TokenService(
+  process.env.JWT_SECRET!,
+  { expiresIn: parseInt(process.env.JWT_EXPIRES_IN!) },
+  tokenBlacklistRepository
+);
 const userService = new UserService(userRepository, emailService, tokenService);
 const userController = new UserController(userService);
 
