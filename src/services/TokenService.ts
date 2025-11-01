@@ -25,8 +25,8 @@ export class TokenService {
         try {
             return Jwt.verify(token, this.secretKey);
         } catch (error) {
-            console.error("An error occured during token verification", error);
-            throw new Error("An error occured during token verification");
+            console.error("An error has occured during token verification", error);
+            throw new Error("An error has occured during token verification");
         }
     }
 
