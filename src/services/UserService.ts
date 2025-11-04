@@ -22,17 +22,16 @@ export class UserService {
     async RegisterNewUser (newUserDto: NewUserDto): Promise<string> {
         await this.verifyUserUniqueness(newUserDto.email, newUserDto.userName);
         newUserDto.password = await this.cryptoService.Hash(newUserDto.password);
-        await this.userRepository.SaveUser(newUserDto);
-        let token = this.tokenService.GenerateToken({email: newUserDto.email, role: "user"});
+        let userId = await this.userRepository.SaveUser(newUserDto);
+        let token = this.tokenService.GenerateToken({userId: userId, username: newUserDto.userName, role: "user"});
         this.emailService.SendUserRegistrationMail(newUserDto.email, newUserDto.firstName, newUserDto.lastName);
         return token;
     }
 
     async Login(email: string, password: string): Promise<string>{
         let user = await this.verifyEmail(email);
-        console.log("USER", user);
         await this.ValidatePassword(password, user.password!);
-        let token = this.tokenService.GenerateToken({email: email, role: "user"});
+        let token = this.tokenService.GenerateToken({userId: user.userId, username: user.userName, role: "user"});
         return token;
     }
 

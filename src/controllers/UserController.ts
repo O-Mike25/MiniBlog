@@ -3,7 +3,7 @@ import { UserService } from "../services/UserService";
 import { NewUserDto } from "../dtos/NewUserDto";
 import { Utils } from "../utils";
 
-export class UserController {
+export class Controller {
     private userService: UserService;
 
     constructor(userService: UserService) {
@@ -52,6 +52,8 @@ export class UserController {
             res.status(400).json({ message });
         }
     }
+
+    
 
     private ValidateNewUserData(newUser: NewUserDto): void {
         const requiredFields: (keyof NewUserDto)[] = [ "lastName", "firstName", "userName", "email", "password" ];

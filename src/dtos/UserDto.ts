@@ -1,4 +1,5 @@
 export type UserDto = {
+    userId?: number;
     lastName?: string;
     firstName?: string;
     userName?: string;

@@ -2,7 +2,7 @@ import { UserService } from "../../../src/services/UserService";
 import { IUserRepository } from "../../../src/repositories/interfaces/IUserRepository";
 import { IEmailService } from "../../../src/services/EmailService/IEmailService";
 import { TokenService } from "../../../src/services/TokenService";
-import { describe, test, expect, beforeEach, jest } from "@jest/globals";;
+import { describe, test, expect, beforeEach, jest } from "@jest/globals";
 import { NewUserDto } from "../../../src/dtos/NewUserDto";
 import { ITokenBlacklistRepository } from "../../../src/repositories/interfaces/ITokenBlacklistRepository";
 import { ICryptoService } from "../../../src/services/CryptoService/ICryptoService";
@@ -17,6 +17,7 @@ describe("UserService", () => {
   const PASSWORD_HASH = "password hash";
   const SECRET_KEY = "fake secret key";
   const USER_ROLE = "user";
+  const USER_ID = 1;
   const TOKEN = "eyJhbGci.ioiOjMDB9._XvU4pQHnIg";
 
   let userService: UserService;
@@ -145,6 +146,7 @@ describe("UserService", () => {
     });
 
     test("Given non existing user When registering this user Then generate JWT token", async () => {
+      userRepository.SaveUser.mockResolvedValue(USER_ID);
       let newUserDto: NewUserDto = {
             lastName: LAST_NAME,
             firstName: FIRST_NAME,
@@ -155,7 +157,7 @@ describe("UserService", () => {
       
       await userService.RegisterNewUser(newUserDto);
 
-      expect(tokenService.GenerateToken).toHaveBeenCalledWith({email: EMAIL, role: USER_ROLE});
+      expect(tokenService.GenerateToken).toHaveBeenCalledWith({userId: USER_ID, username: USER_NAME, role: USER_ROLE});
     });
 
     test("Given non existing user When registering this user Then send confirmation email", async () => {
@@ -190,7 +192,7 @@ describe("UserService", () => {
 
   describe("Login", () => {
     beforeEach(() => {
-      userRepository.FindUserByEmail.mockResolvedValue({password: PASSWORD_HASH});
+      userRepository.FindUserByEmail.mockResolvedValue({userName:USER_NAME, password: PASSWORD_HASH});
       cryptoService.Compare.mockResolvedValue(true);
     })
 
@@ -223,9 +225,11 @@ describe("UserService", () => {
     });
 
     test("Given correct password When logging in Then generate token", async () => {
-      await userService.Login(EMAIL, PASSWORD)
+      userRepository.FindUserByEmail.mockResolvedValue({userId: USER_ID, userName: USER_NAME});
 
-      expect(tokenService.GenerateToken).toHaveBeenCalledWith({email: EMAIL, role: USER_ROLE});
+      await userService.Login(EMAIL, PASSWORD);
+
+      expect(tokenService.GenerateToken).toHaveBeenCalledWith({userId: USER_ID, username: USER_NAME, role: USER_ROLE});
     });
 
     test("Given correct password When logging in Then return token", async () => {

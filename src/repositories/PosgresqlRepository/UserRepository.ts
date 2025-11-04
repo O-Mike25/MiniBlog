@@ -21,6 +21,7 @@ export class UserRepository implements IUserRepository {
   private SAVE_USER: string = `
     INSERT INTO users (last_name, first_name, user_name, email, password, created_at)
     VALUES ($1, $2, $3, $4, $5, NOW())
+    RETURNING id
   `;
 
   private pool: Pool;
@@ -35,6 +36,7 @@ export class UserRepository implements IUserRepository {
       if (result.rowCount === 0) return null;
       const row = result.rows[0];
       return {
+        userId: row.id,
         lastName: row.last_name,
         firstName: row.first_name,
         userName: row.user_name,
@@ -74,11 +76,13 @@ export class UserRepository implements IUserRepository {
       throw new Error(OPERATION_FAILED);
     }
   }
-
-  async SaveUser(newUser: NewUserDto): Promise<void> {
+  
+  async SaveUser(newUser: NewUserDto): Promise<number> {
     try {
       const values = [newUser.lastName, newUser.firstName, newUser.userName, newUser.email, newUser.password];
-      await this.pool.query(this.SAVE_USER, values);
+      const result = await this.pool.query(this.SAVE_USER, values);
+      const userId = result.rows[0].id;
+      return userId;
     } catch (error) {
       console.log(error);
       throw new Error(OPERATION_FAILED);
