@@ -14,6 +14,10 @@ export class ArticleService {
         return await this.articleRepository.GetArticle(articleId)
     }
 
+    async GetArticles(): Promise<ArticleDto[]> {
+        return await this.articleRepository.GetArticles();
+    }
+
     async CreateArticle(newArticle: NewArticleDto): Promise<void> {
         await this.articleRepository.SaveArticle(newArticle);
     }

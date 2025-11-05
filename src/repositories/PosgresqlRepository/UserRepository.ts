@@ -7,7 +7,7 @@ import { NewUserDto } from "../../dtos/NewUserDto";
 
 export class UserRepository implements IUserRepository {
   private GET_USER_BY_EMAIL: string = `
-    SELECT last_name, first_name, user_name, email, password, bio, role, avatar_url, created_at, updated_at
+    SELECT id, last_name, first_name, user_name, email, password, bio, role, avatar_url, created_at, updated_at
     FROM users
     WHERE email = $1
   `;

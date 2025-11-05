@@ -31,7 +31,7 @@ export class UserService {
     async Login(email: string, password: string): Promise<string>{
         let user = await this.verifyEmail(email);
         await this.ValidatePassword(password, user.password!);
-        let token = this.tokenService.GenerateToken({userId: user.userId, username: user.userName, role: "user"});
+        let token = this.tokenService.GenerateToken({userId: user.userId, username: user.userName, role: user.role});
         return token;
     }
 

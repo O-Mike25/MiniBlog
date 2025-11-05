@@ -8,7 +8,7 @@ import { OPERATION_FAILED } from "../../constants/Constants";
 
 export class ArticleRepository implements IArticleRepository {
   private SAVE_ARTICLE = `
-        INSERT INTO articles author_id, title, slug, content, cover_image, tags, status
+        INSERT INTO articles (author_id, title, slug, content, cover_image, tags, status)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
     `;
 
@@ -26,9 +26,9 @@ export class ArticleRepository implements IArticleRepository {
 
   private UPDATE_ARTICLE = `
     UPDATE articles
-    SET title = $1, slug = $2, content = $3, cover_image = $4, tags = $5, status = $6, updated_at = NOW()
-    WHERE id = $7 AND author_id = $8
-    RETURNING id, title, slug, content, cover_image, tags, status, updated_at;
+    SET title = $1, content = $2, cover_image = $3, tags = $4, status = $5, updated_at = NOW()
+    WHERE id = $6 AND author_id = $7
+    RETURNING id, title, content, cover_image, tags, status, updated_at;
   `
   private RATE_ARTICLE = `
     INSERT INTO ratings (user_id, article_id, rate, comment, created_at, updated_at)
@@ -68,10 +68,12 @@ export class ArticleRepository implements IArticleRepository {
         newArticle.slug,
         newArticle.content,
         newArticle.coverImage,
+        newArticle.tags,
         newArticle.status,
       ];
       await this.pool.query(this.SAVE_ARTICLE, values);
     } catch (error) {
+      console.log(error)
       throw new Error(OPERATION_FAILED);
     }
   }
@@ -116,11 +118,14 @@ export class ArticleRepository implements IArticleRepository {
     }
   }
 
+  async GetArticles(): Promise<ArticleDto[]> {
+    return [];
+  }
+
   async UpdateArticle(updateArticle: UpdateArticleDto): Promise<void> {
     try {
       const values = [
         updateArticle.title,
-        updateArticle.slug,
         updateArticle.content,
         updateArticle.coverImage,
         updateArticle.tags,

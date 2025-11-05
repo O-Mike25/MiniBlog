@@ -7,7 +7,7 @@ import { IEmailService } from "./services/EmailService/IEmailService";
 import { NodemailerService } from "./services/EmailService/NodemailerService";
 import { TokenService } from "./services/TokenService";
 import { UserService } from "./services/UserService";
-import { Controller } from "./controllers/UserController";
+import { UserController } from "./controllers/UserController";
 import { TokenBlacklistRepository } from "./repositories/PosgresqlRepository/TokenBlacklistRepository";
 import { ICryptoService } from "./services/CryptoService/ICryptoService";
 import { BcryptCryptoService } from "./services/CryptoService/BcryptService";
@@ -47,10 +47,9 @@ export const tokenService = new TokenService(
 );
 const cryptoService: ICryptoService = new BcryptCryptoService(SALT_ROUND);
 const userService = new UserService(userRepository, emailService, tokenService, cryptoService);
-const userController = new Controller(userService);
-
 const articleRepository: IArticleRepository = new ArticleRepository(dbConfig);
 export const articleService: ArticleService = new ArticleService(articleRepository);
+const userController = new UserController(userService, articleService);
 
 // === Export centralisé (type singleton) ===
 export const Container = {
@@ -65,6 +64,7 @@ export const Container = {
     articleService,
   },
   controllers: {
-    userController,
-  },
+    userController
+  }
+  
 };

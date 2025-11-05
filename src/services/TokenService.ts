@@ -10,6 +10,7 @@ export class TokenService {
         this.secretKey = secretKey; 
         this.options = options;
         this.blacklistRepository = blacklistRepository;
+        console.log(options)
     }
 
     GenerateToken(payload: JwtPayload): string {
