@@ -17,7 +17,7 @@ export class TokenService {
         try {
             return Jwt.sign(payload, this.secretKey, this.options)
         } catch (error) {
-            console.error("An error occured during token generation", error);
+            //console.error("An error occured during token generation", error);
             throw new Error("An error occured during token generation");
         }
     }
@@ -26,7 +26,7 @@ export class TokenService {
         try {
             return Jwt.verify(token, this.secretKey);
         } catch (error) {
-            console.error("An error has occured during token verification", error);
+            //console.error("An error has occured during token verification", error);
             throw new Error("An error has occured during token verification");
         }
     }

@@ -14,10 +14,6 @@ export class ArticleService {
         return await this.articleRepository.GetArticle(articleId)
     }
 
-    async GetArticles(): Promise<ArticleDto[]> {
-        return await this.articleRepository.GetArticles();
-    }
-
     async CreateArticle(newArticle: NewArticleDto): Promise<void> {
         await this.articleRepository.SaveArticle(newArticle);
     }
@@ -27,6 +23,9 @@ export class ArticleService {
     }
 
     async RateArticle(authorId: number, articleId: number, rate?: number, comment?: string): Promise<void> {
+        let article = await this.GetArticle(articleId);
+        if(!article) throw new Error("Article not found");
+        if(article.authorId === authorId) throw new Error("You cannot rate your own article");
         await this.articleRepository.RateArticle(authorId, articleId, rate, comment);
     }
 
@@ -35,6 +34,8 @@ export class ArticleService {
     }
 
     async DeleteArticle(authorId: number, articleId: number): Promise<void> {
+        let article = await this.GetArticle(articleId);
+        if(!article) throw new Error("Article not found");
         await this.articleRepository.DeleteArticle(authorId, articleId);
     }
 }

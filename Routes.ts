@@ -29,7 +29,7 @@ router.put(
   (req, res) => userController.UpdateArticle(req, res)
 );
 
-router.get("/articles/:id", (req, res) =>
+router.get("/article/:id", (req, res) =>
   userController.ObtainArticle(req, res)
 );
 

@@ -13,13 +13,13 @@ export class ArticleRepository implements IArticleRepository {
     `;
 
   private GET_ARTICLE = `
-    SELECT a.id, a.title, a.slug, a.content, a.cover_image, a.tags, a.status, a.created_at AS article_created_at,
+    SELECT a.author_id, a.id, a.title, a.slug, a.content, a.cover_image, a.tags, a.status, a.created_at AS article_created_at,
            a.updated_at AS article_updated_at, ua.user_name AS author_username, ur.user_name AS rating_author_username,
            r.rate, r.comment, r.created_at AS rating_created_at, r.updated_at AS rating_updated_at
     FROM articles AS a
     LEFT JOIN users AS ua ON ua.id = a.author_id
     LEFT JOIN ratings AS r ON r.article_id = a.id
-    LEFT JOIN users AS ur ON ur.id = r.user_id   
+    LEFT JOIN users AS ur ON ur.id = r.author_id   
     WHERE a.id = $1
     ORDER BY r.created_at DESC;
   `;
@@ -31,9 +31,9 @@ export class ArticleRepository implements IArticleRepository {
     RETURNING id, title, content, cover_image, tags, status, updated_at;
   `
   private RATE_ARTICLE = `
-    INSERT INTO ratings (user_id, article_id, rate, comment, created_at, updated_at)
+    INSERT INTO ratings (author_id, article_id, rate, comment, created_at, updated_at)
     VALUES ($1, $2, $3, $4, NOW(), NOW())
-    ON CONFLICT (user_id, article_id)
+    ON CONFLICT (author_id, article_id)
     DO UPDATE SET
       rate = EXCLUDED.rate,
       comment = EXCLUDED.comment,
@@ -41,7 +41,7 @@ export class ArticleRepository implements IArticleRepository {
   `
   private REMOVE_RATE = `
     DELETE FROM ratings
-    WHERE user_id = $1 AND article_id = $2;
+    WHERE author_id = $1 AND article_id = $2;
   `;
 
   private DELETE_ARTICLE = `
@@ -68,6 +68,7 @@ export class ArticleRepository implements IArticleRepository {
         newArticle.slug,
         newArticle.content,
         newArticle.coverImage,
+        Array.isArray(newArticle.tags) ? newArticle.tags : [newArticle.tags],
         newArticle.tags,
         newArticle.status,
       ];
@@ -85,7 +86,7 @@ export class ArticleRepository implements IArticleRepository {
      
      const articleRow = rows[0];
      const article: ArticleDto = {
-        authorUserName: articleRow.author_username,
+        authorId: articleRow.author_id,
         title: articleRow.title,
         slug: articleRow.slug,
         content: articleRow.content,
@@ -114,12 +115,9 @@ export class ArticleRepository implements IArticleRepository {
       else article.averageRate = undefined;
       return article;
     } catch (error) {
+      console.log(error)
       throw new Error(OPERATION_FAILED);
     }
-  }
-
-  async GetArticles(): Promise<ArticleDto[]> {
-    return [];
   }
 
   async UpdateArticle(updateArticle: UpdateArticleDto): Promise<void> {
@@ -128,13 +126,16 @@ export class ArticleRepository implements IArticleRepository {
         updateArticle.title,
         updateArticle.content,
         updateArticle.coverImage,
-        updateArticle.tags,
+        Array.isArray(updateArticle.tags) ? updateArticle.tags : [updateArticle.tags],
         updateArticle.status,
         updateArticle.articleId,
         updateArticle.authorId
       ];
-      await this.pool.query(this.UPDATE_ARTICLE, values);
+      const result = await this.pool.query(this.UPDATE_ARTICLE, values);
+      if (result.rowCount === 0) 
+        throw new Error("Article not found.");      
     } catch (error) {
+      if(error instanceof Error && error.message === "Article not found.") throw new Error("Article not found.");
       throw new Error(OPERATION_FAILED);
     }
   }

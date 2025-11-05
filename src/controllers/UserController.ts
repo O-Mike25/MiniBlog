@@ -100,7 +100,7 @@ export class UserController {
         const token = authHeader!.split(" ")[1];
         const decoded = tokenService.VerifyToken(token) as JwtPayload;
 
-        if(decoded.role === "admin" || decoded.id === req.params.authorId){
+        if(decoded.role === "admin" || decoded.userId === parseInt(req.params.authorId)){
             const coverImagePath = await this.HandleCoverImage(req);
             const updateArticle: UpdateArticleDto = {
                 articleId: parseInt(req.params.articleId),
@@ -121,8 +121,8 @@ export class UserController {
         const authHeader = req.headers["authorization"];
         const token = authHeader!.split(" ")[1];
         const decoded = tokenService.VerifyToken(token) as JwtPayload;
-        if(decoded.role === "admin" || decoded.id == req.params.authorId){
-            this.articleService.DeleteArticle(parseInt(req.params.authorId), parseInt(req.params.articleId));
+        if(decoded.role === "admin" || decoded.userId == parseInt(req.params.authorId)){
+            await this.articleService.DeleteArticle(parseInt(req.params.authorId), parseInt(req.params.articleId));
             res.status(200).json({ message: "Article deleted successfully." });
         }
         else
@@ -130,13 +130,29 @@ export class UserController {
     } 
 
     async RateArticle(req: Request, res: Response): Promise<void> {
-        await this.articleService.RateArticle(parseInt(req.params.authorId), parseInt(req.params.articleId), req.body.rate, req.body.comment);
-        res.status(200).json({ message: "Article rated successfully." });
+        const authHeader = req.headers["authorization"];
+        const token = authHeader!.split(" ")[1];
+        const decoded = tokenService.VerifyToken(token) as JwtPayload;
+        if(decoded.role === "admin" || decoded.userId === parseInt(req.params.authorId)){
+            await this.articleService.RateArticle(parseInt(req.params.authorId), parseInt(req.params.articleId), req.body.rate, req.body.comment);
+            res.status(200).json({ message: "Article rated successfully." });
+        }
+        else {
+          res.status(400).json({ message: ACCESS_DENIED });
+        }
     }
 
     async RemoveRate(req: Request, res: Response): Promise<void> {
-        await this.articleService.RemoveRate(req.body.authorId, parseInt(req.params.articleId));
-        res.status(200).json({ message: "Rating removed successfully." });
+        const authHeader = req.headers["authorization"];
+        const token = authHeader!.split(" ")[1];
+        const decoded = tokenService.VerifyToken(token) as JwtPayload;
+        if(decoded.role === "admin" || decoded.userId === parseInt(req.params.authorId)){
+            await this.articleService.RemoveRate(parseInt(req.params.authorId), parseInt(req.params.articleId));
+            res.status(200).json({ message: "Rating removed successfully." });
+        }
+        else {
+          res.status(400).json({ message: ACCESS_DENIED });
+        }
     }
 
     private ValidateEmail(email: string) {

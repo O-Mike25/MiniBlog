@@ -59,7 +59,6 @@ describe("ArticleService", () => {
         articleId: ARTICLE_ID,
         authorId: AUTHOR_ID,
         title: ARTICLE_TITLE,
-        slug: ARTICLE_SLUG,
         content: ARTICLE_CONTENT,
         coverImage: ARTICLE_COVER_IMAGE,
         tags: ARTICLE_TAGS,
