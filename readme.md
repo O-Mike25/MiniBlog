@@ -197,20 +197,20 @@ Fetch a specific article with its ratings and author.
 {
   "authorId": 1,
   "title": "My First Article",
-  "slug": "",
+  "slug": "mon-premier-article",
   "coverImage": "",
   "content": "Hello world!",
   "tags": ["tech"],
   "status": "published",
-  "createdAt": "",
-  "updatedAt": "",
+  "createdAt": "2025-01-15T10:30:00Z",
+  "updatedAt": "2025-01-20T14:45:00Z",
   "ratings": [
     {
       "username": "janedoe",
       "rate": 5,
       "comment": "Loved it!",
-      "createdAt": "",
-      "updatedAt": "",
+      "createdAt": "2025-01-16T09:20:00Z",
+      "updatedAt": "2025-01-16T09:20:00Z"
     }
   ]
 }
@@ -275,6 +275,13 @@ curl -X POST http://localhost:3000/users/signin   -H "Content-Type: application/
 ```bash
 curl -X POST http://localhost:3000/users/1/article   -H "Authorization: Bearer <token>"   -F "title=My new post"   -F "content=This is my first blog post."   -F "tags=tech"   -F "coverImage=@/path/to/image.jpg"
 ```
+---
+
+## 🛠️ Support
+
+If you encounter any issues, you can get support via:
+
+- **GitHub Issues:** [https://github.com/O-Mike25/MiniBlog/issues](https://github.com/O-Mike25/MiniBlog/issues)
 
 ---
 
@@ -286,4 +293,4 @@ MIT License © 2025 Mini Blog Project
 
 ## ✨ Author
 
-Developed with ❤️ by **[Your Name]**
+Developed with ❤️ by **[O-Mike25]**
