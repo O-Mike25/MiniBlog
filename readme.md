@@ -46,9 +46,24 @@ Create a `.env` file in the project root:
 
 ```env
 PORT=3000
-DATABASE_URL=postgresql://user:password@localhost:5432/miniblog
+# Database configuration
+DB_USER=your_db_user
+DB_HOST=localhost
+DB_NAME=miniblog
+DB_PASSWORD=your_db_password
+DB_PORT=5432
+
+# JWT configuration
 JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=token_expiration_time_in_seconds
+JWT_EXPIRES_IN=1800
+
+# SMTP Mail server configuration
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USER=your_email_user
+MAIL_PASSWORD=your_email_password
+MAIL_FROM="Mini Blog <no-reply@example.com>"
+MAIL_SECURE=false
 ```
 
 ### 4. Run the application
