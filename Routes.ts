@@ -33,6 +33,10 @@ router.get("/article/:id", (req, res) =>
   userController.ObtainArticle(req, res)
 );
 
+router.get("/articles", (req, res) =>
+  userController.ObtainArticles(req, res)
+);
+
 router.delete(
   "/users/:authorId/article/:articleId",
   VerifyToken(),

@@ -70,6 +70,11 @@ export class UserController {
         if (!article) res.status(404).json({ message: "This article doesn't exist." });
         else res.status(200).json({ message: "Article retrieved successfully.", article });
     }
+
+    async ObtainArticles(req: Request, res: Response): Promise<void> {
+        const article = await this.articleService.GetArticles();
+        res.status(200).json({ message: "Articles retrieved successfully.", article });
+    }
     
     async AddArticle(req: Request, res: Response): Promise<void> {
       const authHeader = req.headers["authorization"];
