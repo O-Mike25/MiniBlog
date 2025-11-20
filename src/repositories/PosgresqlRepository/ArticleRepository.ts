@@ -24,6 +24,17 @@ export class ArticleRepository implements IArticleRepository {
     ORDER BY r.created_at DESC;
   `;
 
+  private GET_ARTICLES = `
+    SELECT a.author_id, a.id, a.title, a.slug, a.content, a.cover_image, a.tags, a.status, a.created_at AS article_created_at,
+           a.updated_at AS article_updated_at, ua.user_name AS author_username, ur.user_name AS rating_author_username,
+           r.rate, r.comment, r.created_at AS rating_created_at, r.updated_at AS rating_updated_at
+    FROM articles AS a
+    LEFT JOIN users AS ua ON ua.id = a.author_id
+    LEFT JOIN ratings AS r ON r.article_id = a.id
+    LEFT JOIN users AS ur ON ur.id = r.author_id   
+    ORDER BY r.created_at DESC;
+  `
+
   private UPDATE_ARTICLE = `
     UPDATE articles
     SET title = $1, content = $2, cover_image = $3, tags = $4, status = $5, updated_at = NOW()
@@ -75,6 +86,61 @@ export class ArticleRepository implements IArticleRepository {
       await this.pool.query(this.SAVE_ARTICLE, values);
     } catch (error) {
       console.log(error)
+      throw new Error(OPERATION_FAILED);
+    }
+  }
+
+  async GetArticles(): Promise<ArticleDto[]> {
+    try {
+      const { rows } = await this.pool.query(this.GET_ARTICLES);
+      if (rows.length === 0) return [];
+      const articlesMap = new Map<number, ArticleDto>();
+
+      for (const row of rows) {
+        if (!articlesMap.has(row.id)) {
+          articlesMap.set(row.id, {
+            authorId: row.author_id,
+            id: row.id,
+            title: row.title,
+            slug: row.slug,
+            content: row.content,
+            coverImage: row.cover_image,
+            tags: row.tags,
+            status: row.status,
+            createdAt: row.article_created_at,
+            updatedAt: row.article_updated_at,
+            ratings: [],
+            averageRate: undefined,
+          });
+        }
+        const article = articlesMap.get(row.id)!;
+
+        if (row.rate !== null || row.comment !== null) {
+          article.ratings!.push({
+            username: row.rating_author_username,
+            rate: row.rate,
+            comment: row.comment,
+            createdAt: row.rating_created_at,
+            updatedAt: row.rating_updated_at,
+          });
+        }
+      }
+
+      for (const article of articlesMap.values()) {
+        if (article.ratings!.length > 0) {
+          const validRates = article.ratings!.filter(r => typeof r.rate === "number");
+          article.averageRate =
+            validRates.length > 0
+              ? validRates.reduce((sum, r) => sum + (r.rate ?? 0), 0) / validRates.length
+              : undefined;
+        } else {
+          article.averageRate = undefined;
+        }
+      }
+
+      return Array.from(articlesMap.values());
+    } catch (error) {
+      console.error(error);
       throw new Error(OPERATION_FAILED);
     }
   }

@@ -225,7 +225,7 @@ describe("UserService", () => {
     });
 
     test("Given correct password When logging in Then generate token", async () => {
-      userRepository.FindUserByEmail.mockResolvedValue({userId: USER_ID, userName: USER_NAME});
+      userRepository.FindUserByEmail.mockResolvedValue({userId: USER_ID, userName: USER_NAME, role: USER_ROLE});
 
       await userService.Login(EMAIL, PASSWORD);
 

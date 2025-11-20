@@ -8,6 +8,7 @@ export enum Status {
 
 export type ArticleDto = {
     authorId?: number;
+    id?: number;
     title?: string;
     slug?: string;
     content?: string;

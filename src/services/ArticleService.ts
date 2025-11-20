@@ -14,6 +14,19 @@ export class ArticleService {
         return await this.articleRepository.GetArticle(articleId)
     }
 
+    async GetArticles(): Promise<ArticleDto[]> {
+        let articles = await this.articleRepository.GetArticles();
+        return articles.map(article => ({
+            authorId: article.authorId,
+            id: article.id,
+            title: article.title,
+            tags: article.tags,
+            averageRate: article.averageRate,
+            coverImage: article.coverImage,
+            createdAt: article.createdAt
+        }));
+    }
+
     async CreateArticle(newArticle: NewArticleDto): Promise<void> {
         await this.articleRepository.SaveArticle(newArticle);
     }
