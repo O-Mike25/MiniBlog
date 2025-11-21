@@ -31,7 +31,10 @@ describe("UserService", () => {
     userRepository = {
       FindUserByEmail: jest.fn(),
       FindUserByUserName: jest.fn(),
-      SaveUser: jest.fn()
+      SaveUser: jest.fn(),
+      GetUser: jest.fn(),
+      UpdateUser: jest.fn(),
+      DeleteUser: jest.fn()
     };
 
     emailService = {
@@ -265,4 +268,90 @@ describe("UserService", () => {
     });
   });
   
+  describe("GetUserProfile", () => {
+    test("Given user id When fetching an user profile Then call persistance", async () => {
+      await userService.GetUserProfile(USER_ID);
+
+      expect(userRepository.GetUser).toHaveBeenCalledWith(USER_ID);
+    })
+
+    test("Given existing user When fetching an user profile Then return user profile", async () => {
+      let expectedUser = { userId: USER_ID }
+      userRepository.GetUser.mockResolvedValue(expectedUser);
+
+      let obtainedUser = await userService.GetUserProfile(USER_ID);
+
+      expect(obtainedUser).toBe(expectedUser);
+    })
+  })
+
+  describe("UpdateUserProfile", () => {
+    test("Given a user id When updating the user's profile Then retrieve the user", async () => {
+      userRepository.GetUser.mockResolvedValue({userId: USER_ID});
+      let newUserInfos = {
+        firstName: FIRST_NAME,
+        lastName: LAST_NAME,
+        userName: USER_NAME,
+        email: EMAIL,
+        password: PASSWORD
+      }
+
+      await userService.UpdateUserProfile(USER_ID, newUserInfos);
+
+      expect(userRepository.GetUser).toHaveBeenCalledWith(USER_ID);
+    })
+
+    test("Given a non-existant user When attempting to update the user profile Then return exception", async () => {
+      let newUserInfos = {
+        firstName: FIRST_NAME,
+        lastName: LAST_NAME,
+        userName: USER_NAME,
+        email: EMAIL,
+        password: PASSWORD
+      }
+
+      const promise = userService.UpdateUserProfile(USER_ID, newUserInfos);
+
+      await expect(promise).rejects.toThrow("This user doesn't exist");
+    })
+
+    test("Given new user information When updating the user profile Then update the user in the persistance", async () => {
+      userRepository.GetUser.mockResolvedValue({userId: USER_ID});
+      let newUserInfos = {
+        firstName: FIRST_NAME,
+        lastName: LAST_NAME,
+        userName: USER_NAME,
+        email: EMAIL,
+        password: PASSWORD
+      }
+
+      await userService.UpdateUserProfile(USER_ID, newUserInfos);
+
+      expect(userRepository.GetUser).toHaveBeenCalledWith(USER_ID);
+    })
+  })
+
+  describe("DeleteUser", () => {
+    test("Given a user id When deleting a user profile Then retrieves the user", async () => {
+      userRepository.GetUser.mockResolvedValue({userId: USER_ID});
+
+      await userService.DeleteUser(USER_ID);
+
+      expect(userRepository.GetUser).toHaveBeenCalledWith(USER_ID);
+    })
+
+    test("Given a non-existent user When attempting to delete the user Then return exception", async () => {
+      const promise = userService.DeleteUser(USER_ID);
+
+      await expect(promise).rejects.toThrow("This user doesn't exist");
+    })
+
+    test("Given a user id When deleting a user profile Then delete the user from persistance", async () => {
+      userRepository.GetUser.mockResolvedValue({userId: USER_ID});
+
+      await userService.DeleteUser(USER_ID);
+
+      expect(userRepository.DeleteUser).toHaveBeenCalledWith(USER_ID);
+    })
+  })
 });

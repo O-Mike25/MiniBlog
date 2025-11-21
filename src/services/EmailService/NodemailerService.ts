@@ -20,7 +20,6 @@ export class NodemailerService implements IEmailService {
         pass: mailConfig.password
       }
     } as SMTPTransport.Options)
-    console.log(mailConfig);
   }
 
   async SendUserRegistrationMail(userMail: string, userFirstName: string, userLastName: string): Promise<void> {

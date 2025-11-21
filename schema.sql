@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS articles (
     author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(200) NOT NULL,
     slug VARCHAR(200) NOT NULL UNIQUE,
-    content TEXT NOT NULL,
+    content TEXT,
     cover_image TEXT,
     tags TEXT[],
     status article_status DEFAULT 'draft',

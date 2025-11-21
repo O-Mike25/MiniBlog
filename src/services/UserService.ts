@@ -5,6 +5,7 @@ import { TokenService } from "./TokenService";
 import { ICryptoService } from "./CryptoService/ICryptoService";
 import { UserDto } from "../dtos/UserDto";
 import { INVALID_CREDENTIALS_EXCEPTION } from "../constants/Constants";
+import { UpdateUserDto } from "../dtos/UpdateUserDto";
 
 export class UserService {
     private userRepository: IUserRepository;
@@ -29,7 +30,7 @@ export class UserService {
     }
 
     async Login(email: string, password: string): Promise<string>{
-        let user = await this.verifyEmail(email);
+        let user = await this.verifyEmailExistence(email);
         await this.ValidatePassword(password, user.password!);
         let token = this.tokenService.GenerateToken({userId: user.userId, username: user.userName, role: user.role});
         return token;
@@ -39,6 +40,21 @@ export class UserService {
         let isBlacklisted = await this.tokenService.IsBlacklisted(token);
         if(isBlacklisted) return;
         this.tokenService.SaveToken(token);
+    }
+
+    async GetUserProfile(userId: number): Promise<UserDto | null> {
+        return await this.userRepository.GetUser(userId);
+    }
+
+    async UpdateUserProfile(userId: number, userDto: UpdateUserDto): Promise<void> {
+        userDto.password = await this.cryptoService.Hash(userDto.password);
+        await this.verifyUserExistenceById(userId);
+        await this.userRepository.UpdateUser(userDto);
+    }
+
+    async DeleteUser(userId: number): Promise<void> {
+        await this.verifyUserExistenceById(userId);
+        await this.userRepository.DeleteUser(userId);
     }
 
     private async verifyUserUniqueness(email: string, userName: string): Promise<void> {
@@ -52,9 +68,15 @@ export class UserService {
         }
     }
 
-    private async verifyEmail(email: string): Promise<UserDto> {
+    private async verifyEmailExistence(email: string): Promise<UserDto> {
         const user = await this.userRepository.FindUserByEmail(email);
         if(!user) throw new Error (INVALID_CREDENTIALS_EXCEPTION)
+        return user;
+    }
+
+    private async verifyUserExistenceById(userId: number): Promise<UserDto> {
+        const user = await this.userRepository.GetUser(userId);
+        if(!user) throw new Error ("This user doesn't exist")
         return user;
     }
 

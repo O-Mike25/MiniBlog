@@ -12,6 +12,7 @@ import fs from "fs";
 import { UpdateArticleDto } from "../dtos/UpdateArticleDto";
 import { ArticleDto } from "../dtos/ArticleDto";
 import { ACCESS_DENIED } from "../constants/Constants";
+import { UpdateUserDto } from "../dtos/UpdateUserDto";
 
 export class UserController {
     private userService: UserService;
@@ -62,6 +63,42 @@ export class UserController {
         } catch (error) {
             const message = error instanceof Error ? error.message : "An error occured when disconnecting the user";
             res.status(400).json({ message });
+        }
+    }
+
+    async ObtainUser(req: Request, res: Response): Promise<void> {
+        const user = await this.userService.GetUserProfile(parseInt(req.params.id));
+        if (!user) res.status(404).json({ message: "This user doesn't exist." });
+        else res.status(200).json({ message: "User retrieved successfully.", user });
+    }
+
+    async UpdateUser(req: Request, res: Response): Promise<void> {
+        const decoded = this.ExtractJwtPayload(req);
+        if(decoded.role === "admin" || decoded.userId === parseInt(req.params.userId)){
+            const avatarImagePath = await this.HandleCoverImage(req);
+            const newInfos: UpdateUserDto = {
+                lastName: req.params.lastName,
+                firstName: req.params.firstName,
+                userName: req.body.userName,
+                email: req.body.email,
+                password: req.body.password,
+                avatarUrl: avatarImagePath,
+                bio: req.body.bio || []
+            };
+            await this.userService.UpdateUserProfile(parseInt(req.params.userId), newInfos);
+            res.status(200).json({ message: "User updated successfully." });
+        } else
+            res.status(400).json({ message: ACCESS_DENIED });
+    }
+
+    async RemoveUser(req: Request, res: Response): Promise<void> {
+        const decoded = this.ExtractJwtPayload(req);
+        if(decoded.role === "admin" || decoded.userId === parseInt(req.params.userId)){
+            await this.userService.DeleteUser(parseInt(req.params.userId));
+            res.status(200).json({ message: "User removed successfully." });
+        }
+        else {
+          res.status(400).json({ message: ACCESS_DENIED });
         }
     }
 
@@ -202,5 +239,16 @@ export class UserController {
         const filePath = path.join(uploadDir, fileName);
         fs.writeFileSync(filePath, req.file.buffer);
         return `/assets/images/${fileName}`; 
+    }
+
+    private ExtractJwtPayload(req: Request): JwtPayload {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) throw new Error("Missing Authorization header");
+
+        const token = authHeader.split(" ")[1];
+        if (!token) throw new Error("Invalid Authorization header");
+
+        const decoded = tokenService.VerifyToken(token) as JwtPayload;
+        return decoded;
     }
 }
