@@ -42,18 +42,18 @@ export class UserService {
         this.tokenService.SaveToken(token);
     }
 
-    async GetUserProfile(userId: number): Promise<UserDto | null> {
+    async GetUserProfile(userId: number): Promise<UserDto> {
         return await this.userRepository.GetUser(userId);
     }
 
     async UpdateUserProfile(userId: number, userDto: UpdateUserDto): Promise<void> {
         userDto.password = await this.cryptoService.Hash(userDto.password);
-        await this.verifyUserExistenceById(userId);
+        await this.userRepository.GetUser(userId);
         await this.userRepository.UpdateUser(userDto);
     }
 
     async DeleteUser(userId: number): Promise<void> {
-        await this.verifyUserExistenceById(userId);
+        await this.userRepository.GetUser(userId);
         await this.userRepository.DeleteUser(userId);
     }
 
@@ -71,12 +71,6 @@ export class UserService {
     private async verifyEmailExistence(email: string): Promise<UserDto> {
         const user = await this.userRepository.FindUserByEmail(email);
         if(!user) throw new Error (INVALID_CREDENTIALS_EXCEPTION)
-        return user;
-    }
-
-    private async verifyUserExistenceById(userId: number): Promise<UserDto> {
-        const user = await this.userRepository.GetUser(userId);
-        if(!user) throw new Error ("This user doesn't exist")
         return user;
     }
 

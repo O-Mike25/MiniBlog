@@ -114,7 +114,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async GetUser(userId: number): Promise<UserDto | null> {
+  async GetUser(userId: number): Promise<UserDto> {
     try {
       const result = await this.pool.query(this.GET_USER, [userId]);
       if (result.rowCount === 0)

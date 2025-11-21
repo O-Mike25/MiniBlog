@@ -301,20 +301,6 @@ describe("UserService", () => {
       expect(userRepository.GetUser).toHaveBeenCalledWith(USER_ID);
     })
 
-    test("Given a non-existant user When attempting to update the user profile Then return exception", async () => {
-      let newUserInfos = {
-        firstName: FIRST_NAME,
-        lastName: LAST_NAME,
-        userName: USER_NAME,
-        email: EMAIL,
-        password: PASSWORD
-      }
-
-      const promise = userService.UpdateUserProfile(USER_ID, newUserInfos);
-
-      await expect(promise).rejects.toThrow("This user doesn't exist");
-    })
-
     test("Given new user information When updating the user profile Then update the user in the persistance", async () => {
       userRepository.GetUser.mockResolvedValue({userId: USER_ID});
       let newUserInfos = {
@@ -338,12 +324,6 @@ describe("UserService", () => {
       await userService.DeleteUser(USER_ID);
 
       expect(userRepository.GetUser).toHaveBeenCalledWith(USER_ID);
-    })
-
-    test("Given a non-existent user When attempting to delete the user Then return exception", async () => {
-      const promise = userService.DeleteUser(USER_ID);
-
-      await expect(promise).rejects.toThrow("This user doesn't exist");
     })
 
     test("Given a user id When deleting a user profile Then delete the user from persistance", async () => {
