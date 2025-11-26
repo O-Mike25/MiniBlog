@@ -119,7 +119,7 @@ export class UserController {
       const token = authHeader!.split(" ")[1];
       const decoded = tokenService.VerifyToken(token) as JwtPayload;
       if(decoded.role === "admin" || decoded.userId === parseInt(req.params.id)){
-          this.ValidateRequiredField(req.body, ["title", "content"]);
+          this.ValidateRequiredField(req.body, ["title"]);
           const coverImagePath = await this.HandleCoverImage(req);
           const newArticle: NewArticleDto = {
             authorId: parseInt(req.params.id),
@@ -130,7 +130,7 @@ export class UserController {
             tags: req.body.tags || [],
             status: req.body.status || "draft"
           };
-          this.articleService.CreateArticle(newArticle);
+          await this.articleService.CreateArticle(newArticle);
           res.status(201).json({ message: "Article created successfully." });
       } else {
           res.status(400).json({ message: ACCESS_DENIED });

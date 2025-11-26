@@ -80,7 +80,6 @@ export class ArticleRepository implements IArticleRepository {
         newArticle.content,
         newArticle.coverImage,
         Array.isArray(newArticle.tags) ? newArticle.tags : [newArticle.tags],
-        newArticle.tags,
         newArticle.status,
       ];
       await this.pool.query(this.SAVE_ARTICLE, values);
