@@ -149,7 +149,7 @@ router.get(
  *             required:
  *               - firstName
  *               - lastName
- *               - username
+ *               - userName
  *               - email
  *               - password
  *     responses:

@@ -49,7 +49,7 @@ export class UserService {
     async UpdateUserProfile(userId: number, userDto: UpdateUserDto): Promise<void> {
         userDto.password = await this.cryptoService.Hash(userDto.password);
         await this.userRepository.GetUser(userId);
-        await this.userRepository.UpdateUser(userDto);
+        await this.userRepository.UpdateUser(userId, userDto);
     }
 
     async DeleteUser(userId: number): Promise<void> {

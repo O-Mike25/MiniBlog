@@ -7,6 +7,6 @@ export interface IUserRepository {
     FindUserByUserName(userName: string): Promise<UserDto | null>
     SaveUser(newUser: NewUserDto): Promise<number>
     GetUser(userId: number): Promise<UserDto>
-    UpdateUser(userDto: UpdateUserDto): Promise<void>
+    UpdateUser(userId: number, userDto: UpdateUserDto): Promise<void>
     DeleteUser(userId: number): Promise<void>
 }

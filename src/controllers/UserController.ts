@@ -76,9 +76,10 @@ export class UserController {
         const decoded = this.ExtractJwtPayload(req);
         if(decoded.role === "admin" || decoded.userId === parseInt(req.params.userId)){
             const avatarImagePath = await this.HandleCoverImage(req);
+            this.ValidateEmail(req.body.email);
             const newInfos: UpdateUserDto = {
-                lastName: req.params.lastName,
-                firstName: req.params.firstName,
+                lastName: req.body.lastName,
+                firstName: req.body.firstName,
                 userName: req.body.userName,
                 email: req.body.email,
                 password: req.body.password,

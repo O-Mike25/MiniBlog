@@ -138,7 +138,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async UpdateUser(userDto: UpdateUserDto): Promise<void> {
+  async UpdateUser(userId: number, userDto: UpdateUserDto): Promise<void> {
     try {
       const values = [
         userDto.lastName,
@@ -147,7 +147,8 @@ export class UserRepository implements IUserRepository {
         userDto.email,
         userDto.password,
         userDto.bio,
-        userDto.avatarUrl
+        userDto.avatarUrl,
+        userId
       ];
       await this.pool.query(this.UPDATE_USER, values);
     } catch (error) {
