@@ -4,4 +4,8 @@ export type DatabaseConfigDto = {
   database: string;
   password: string;
   port: number;
-}
+  ssl?: boolean | {
+    require?: boolean;
+    rejectUnauthorized?: boolean;
+  };
+};

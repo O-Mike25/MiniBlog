@@ -8,13 +8,13 @@ import { UpdateUserDto } from "../../dtos/UpdateUserDto";
 
 export class UserRepository implements IUserRepository {
   private GET_USER_BY_EMAIL: string = `
-    SELECT id, last_name, first_name, user_name, email, password, bio, role, avatar_url, created_at, updated_at
+    SELECT id, last_name, first_name, user_name, email, password, bio, role, avatarUrl, created_at, updated_at
     FROM users
     WHERE email = $1
   `;
 
   private GET_USER_BY_USER_NAME: string = `
-    SELECT last_name, first_name, user_name, email, password, bio, role, avatar_url, created_at, updated_at
+    SELECT last_name, first_name, user_name, email, password, bio, role, avatarUrl, created_at, updated_at
     FROM users
     WHERE user_name = $1
   `;
@@ -26,7 +26,7 @@ export class UserRepository implements IUserRepository {
   `;
 
   private GET_USER: string = `
-    SELECT id, last_name, first_name, user_name, email, bio, role, avatar_url, created_at, updated_at
+    SELECT id, last_name, first_name, user_name, email, bio, role, avatarUrl, created_at, updated_at
     FROM users
     WHERE id = $1
   `;
@@ -39,7 +39,7 @@ export class UserRepository implements IUserRepository {
         email = $4,
         password = $5,
         bio = $6,
-        avatar_url = $7,
+        avatarUrl = $7,
         updated_at = NOW()
     WHERE id = $8
   `;
@@ -67,13 +67,14 @@ export class UserRepository implements IUserRepository {
         userName: row.user_name,
         email: row.email,
         password: row.password,
-        avatarUrl: row.avatar_url,
+        avatarUrl: row.avatarUrl,
         bio: row.bio,
         role: row.role,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       };
     } catch (error) {
+      console.log(error)
       throw new Error(OPERATION_FAILED);
     }
   }
@@ -91,7 +92,7 @@ export class UserRepository implements IUserRepository {
         userName: row.user_name,
         email: row.email,
         password: row.password,
-        avatarUrl: row.avatar_url,
+        avatarUrl: row.avatarUrl,
         bio: row.bio,
         role: row.role,
         createdAt: row.created_at,
@@ -127,7 +128,7 @@ export class UserRepository implements IUserRepository {
         firstName: row.first_name,
         userName: row.user_name,
         email: row.email,
-        avatarUrl: row.avatar_url,
+        avatarUrl: row.avatarUrl,
         bio: row.bio,
         role: row.role,
         createdAt: row.created_at,
