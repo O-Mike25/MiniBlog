@@ -26,7 +26,8 @@ export const dbConfig: DatabaseConfigDto = {
   password: process.env.DB_PASSWORD!,
   port: parseInt(process.env.DB_PORT!),
   ssl: {
-    require: true
+    require: true,
+    rejectUnauthorized: false
   }
 };
 
